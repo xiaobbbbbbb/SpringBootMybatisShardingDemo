@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zb.shardingdemo.mapper.UserDao">
+  <resultMap id="BaseResultMap" type="com.zb.shardingdemo.entity.User">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="age" jdbcType="TINYINT" property="age" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_name, age
+  </sql>
+  <sql id="Base_where_sql">
+    <if test="map!=null">
+      <where>
+        <if test="null != map.buyerId">
+          buyer_id = #{map.buyerId}
+        </if>
+
+      </where>
+    </if>
+  </sql>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from user
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from user
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.zb.shardingdemo.entity.User" useGeneratedKeys="true">
+    insert into user (user_name, age)
+    values (#{userName,jdbcType=VARCHAR}, #{age,jdbcType=TINYINT})
+  </insert>
+
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.zb.shardingdemo.entity.User" useGeneratedKeys="true">
+    insert into user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="age != null">
+        age,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        #{age,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.zb.shardingdemo.entity.User">
+    update user
+    <set>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        age = #{age,jdbcType=TINYINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.zb.shardingdemo.entity.User">
+    update user
+    set user_name = #{userName,jdbcType=VARCHAR},
+      age = #{age,jdbcType=TINYINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="listUsers" parameterType="map" resultMap="userMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM user
+    <include refid="Base_where_sql"/>
+  </select>
+
+  <select id="countPage" parameterType="map" resultType="long">
+    SELECT
+    count(*)
+    FROM user
+    <include refid="Base_where_sql"/>
+
+  </select>
+
+  <select id="findPage" parameterType="map" resultMap="userMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM user
+    <include refid="Base_where_sql"/>
+    LIMIT #{map.offSet},#{map.pageSize}
+
+  </select>
+
+  <resultMap type="com.zb.shardingdemo.entity.User" id="userMap">
+    <id column="id" property="id"/>
+    <result column="user_name" property="userName"/>
+    <result column="age" property="age"/>
+  </resultMap>
+</mapper>
